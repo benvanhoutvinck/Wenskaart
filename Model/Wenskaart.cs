@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,7 +12,7 @@ namespace WpfTest.Model
     {
         public string Wens { get; set; }
 
-        public List<Bal> Ballen { get; set; }
+        public ObservableCollection<Bal> Ballen { get; set; }
 
         public ImageSource Achtergrond { get; set; }
 
@@ -27,7 +28,7 @@ namespace WpfTest.Model
 
         public Wenskaart()
         {
-            this.Ballen = new List<Bal>();
+            this.Ballen = new ObservableCollection<Bal>();
         }
     }
 }

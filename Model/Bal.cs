@@ -10,7 +10,7 @@ namespace WpfTest.Model
     class Bal
     {
         public double X { get; set; }
-        public double y { get; set; }
+        public double Y { get; set; }
         public SolidColorBrush Kleur { get; set; }
 
         public string Naam { get; set; }
@@ -18,7 +18,7 @@ namespace WpfTest.Model
         {
             this.Kleur = kleur;
             this.X = x;
-            this.y = y;
+            this.Y = y;
         }
     }
 }

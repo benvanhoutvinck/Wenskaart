@@ -3,6 +3,7 @@ using GalaSoft.MvvmLight.Command;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -53,22 +54,22 @@ namespace WpfTest.ViewModel
                 kleurkes.Add(kleurke);
 
             }
-            _Kleuren = kleurkes;
+            KleurenValue = kleurkes;
         }
 
-        private List<Kleur> _Kleuren;
+        private List<Kleur> KleurenValue;
 
         public List<Kleur> Kleuren
         {
-            get { return _Kleuren; }
+            get { return KleurenValue; }
             set
             {
-                _Kleuren = value;
+                KleurenValue = value;
                 RaisePropertyChanged("Kleuren");
             }
         }
 
-        public List<Bal> Ballen
+        public ObservableCollection<Bal> Ballen
         {
             get { return wenskaart.Ballen; }
             set
@@ -150,26 +151,26 @@ namespace WpfTest.ViewModel
             }
         }
 
-        private bool _isEnabled;
+        private bool IsenabledValue;
 
         public bool IsEnabled
         {
-            get { return _isEnabled; }
+            get { return IsenabledValue; }
             set
             {
-                _isEnabled = value;
+                IsenabledValue = value;
                 RaisePropertyChanged("IsEnabled");
             }
         }
 
-        private bool _isNew;
+        private bool IsNewValue;
 
         public bool IsNotNew
         {
-            get { return _isNew; }
+            get { return IsNewValue; }
             set
             {
-                _isNew = value;
+                IsNewValue = value;
                 RaisePropertyChanged("IsNotNew");
             }
         }
@@ -179,25 +180,20 @@ namespace WpfTest.ViewModel
             get { return new RelayCommand<MouseEventArgs>(OnDrag); }
         }
 
-        private Ellipse sleepEllipse = new Ellipse();
-
-
+        private Ellipse SleepEllipse = new Ellipse();
 
         public void OnDrag(MouseEventArgs e)
         {
 
             if ((e.MouseDevice.LeftButton == MouseButtonState.Pressed))
             {
-
-                sleepEllipse = (Ellipse)e.OriginalSource;
-
-                DataObject sleepKleur = new DataObject("deKleur", sleepEllipse.Fill);
-                DragDrop.DoDragDrop(sleepEllipse, sleepKleur, DragDropEffects.Move);
-
+                SleepEllipse = (Ellipse)e.OriginalSource;
+                DataObject SleepKleur = new DataObject("deKleur", SleepEllipse.Fill);
+                DragDrop.DoDragDrop(SleepEllipse, SleepKleur, DragDropEffects.Move);
             }
         }
 
-        private Bal vindBal(string tag)
+        private Bal VindBal(string tag)
         {
             foreach (Bal bal in Ballen)
             {
@@ -216,29 +212,36 @@ namespace WpfTest.ViewModel
 
         public void OnDrop(DragEventArgs e)
         {
-
             double ypos = e.GetPosition((IInputElement)e.OriginalSource).Y;
             double xpos = e.GetPosition((IInputElement)e.OriginalSource).X;
-            List<Bal> tempList = new List<Bal>();
+            //List<Bal> tempList = new List<Bal>();
 
-            if (sleepEllipse.Tag == null)
+            if (SleepEllipse.Tag == null)
             {
                 SolidColorBrush kleur = (SolidColorBrush)e.Data.GetData("deKleur");
                 Bal bal = new Bal(kleur, xpos - 20, ypos - 20);
                 bal.Naam = "bal" + Ballen.Count + 1;
-                tempList.Add(bal);
+                Ballen.Add(bal);
 
                 IsNotNew = true;
             }
             else
             {
-                vindBal(sleepEllipse.Tag.ToString()).X = xpos - 20;
-                vindBal(sleepEllipse.Tag.ToString()).y = ypos - 20;
-                RaisePropertyChanged("Ballen");
+                Bal tempBal = VindBal(SleepEllipse.Tag.ToString());
+                Bal verplaatsteBal = new Bal(tempBal.Kleur, xpos - 20, ypos - 20);
+                verplaatsteBal.Naam = tempBal.Naam;
+                foreach (Bal bal in Ballen)
+                {
+                    if (bal.Naam == SleepEllipse.Tag.ToString())
+                    {
+                        Ballen.Remove(bal);
+                        break;
+                    }
+                }
+                Ballen.Add(verplaatsteBal);
+               
             }
-            tempList.AddRange(Ballen);
-
-            Ballen = tempList;
+         
         }
 
         public RelayCommand<DragEventArgs> RemoveCommand
@@ -248,14 +251,17 @@ namespace WpfTest.ViewModel
 
         public void Remove(DragEventArgs e)
         {
-            if (sleepEllipse.Tag != null)
+            if (SleepEllipse.Tag != null)
             {
-                Ballen.RemoveAll(x => x.Naam == sleepEllipse.Tag.ToString());
+                foreach (Bal bal in Ballen)
+                {
+                    if (bal.Naam == SleepEllipse.Tag.ToString())
+                    {
+                        Ballen.Remove(bal);
+                        break;
+                    }
+                }
             }
-            List<Bal> tempList = new List<Bal>();
-            tempList.AddRange(Ballen);
-
-            Ballen = tempList;
         }
 
         public RelayCommand GroterCommand
@@ -287,7 +293,7 @@ namespace WpfTest.ViewModel
 
         private void Nieuw()
         {
-            Ballen = new List<Bal>();
+            Ballen = new ObservableCollection<Bal>();
             Wens = null;
             IsNotNew = false;
         }
@@ -328,7 +334,7 @@ namespace WpfTest.ViewModel
 
                             bestand.WriteLine(bal.Kleur);
                             bestand.WriteLine(bal.X);
-                            bestand.WriteLine(bal.y);
+                            bestand.WriteLine(bal.Y);
 
                         }
                         bestand.WriteLine(Wens);
@@ -361,7 +367,7 @@ namespace WpfTest.ViewModel
                     {
                         Pad = bestand.ReadLine();
                         string kaart = bestand.ReadLine();
-                        List<Bal> ballenList = new List<Bal>();
+                        ObservableCollection<Bal> ballenList = new ObservableCollection<Bal>();
                         int teller = Convert.ToInt16(bestand.ReadLine());
                         for (int i = 0; i < teller; i++)
                         {
@@ -484,7 +490,7 @@ namespace WpfTest.ViewModel
                 ell.Width = 40;
 
                 Canvas.SetLeft(ell, bal.X);
-                Canvas.SetTop(ell, bal.y);
+                Canvas.SetTop(ell, bal.Y);
 
                 canvas.Children.Add(ell);
             }
